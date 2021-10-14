@@ -17,7 +17,9 @@ fi
 IN="$1"
 HEIGHT="$2"
 PROJ="${IN%.*}"
-OUT="${IN%.*}-out.mp4"
+OUT_A="${IN%.*}-outa.gif"
+OUT_B="${IN%.*}-outb.gif"
+OUT="${IN%.*}-out"
 
 FRAMES="$PROJ-frames"
 DITHER="$PROJ-dither"
@@ -50,4 +52,9 @@ echo "=== DITHERING (might take a while) ==="
 for f in "$FRAMES"/*; do 2ff <"$f" | jd | ff2png >"$DITHER/$(basename $f)"; done
 
 echo "=== ENCODING ==="
-ffmpeg -v info -r $FPS -i "$PROJ"'-dither/%06d.png' -i "$IN" -c:v libx264 -preset veryslow -c:a copy -pix_fmt yuv420p -map 0:v:0 -map 1:a:0 $OUT
+ffmpeg -framerate $FPS -i $DITHER/%06d.png -lavfi palettegen=stats_mode=diff[pal],[0:v][pal]paletteuse=new=1:dither=sierra2_4a:diff_mode=rectangle -f gif $OUT_A
+gifsicle -O3 -k 5 --color-method blend-diversity $OUT_A -o $OUT_B
+ffmpeg -i $OUT_B -i $IN -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 512k $OUT.mov
+
+ it seems if crf=1 then we get yuv444 and ff doesn't support that
+ffmpeg -v info -r $FPS -i "$PROJ"'-dither/%06d.png' -i "$IN" -c:v libx264 -preset veryslow -crf 1 -pix_fmt yuv420p -c:a aac -b:a 256k -map 0:v:0 -map 1:a:0 $OUT.mp4
