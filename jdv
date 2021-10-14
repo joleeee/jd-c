@@ -1,0 +1,53 @@
+#!/bin/sh
+
+usage="usage:
+	$(basename "$0") <in> <height>
+
+example:
+	$(basename "$0") lain-ep1.mp4 128
+
+warning:
+	do not run on different files with the same name"
+
+if [[ -z "$1" ]] || [[ -z "$2" ]]; then
+	echo "$usage"
+	exit 0
+fi
+
+IN="$1"
+HEIGHT="$2"
+PROJ="${IN%.*}"
+OUT="${IN%.*}-out.mp4"
+
+FRAMES="$PROJ-frames"
+DITHER="$PROJ-dither"
+FPSFILE="$PROJ-fps"
+
+
+fps () {
+	# cat it if it's saved
+	cat "$FPSFILE" && exit 0
+
+	DURATION="$(ffprobe $IN -show_entries format=duration -v quiet | grep -Po '(?<=duration=).*')"
+	FRAMES="$(ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=nb_read_frames $IN | grep -Po '(?<=nb_read_frames=).*')"
+	FPS="$(awk "BEGIN { print "$FRAMES/$DURATION" }";)"
+	echo "$FPS" > "$FPSFILE"
+	cat "$FPSFILE"
+}
+
+
+echo "=== COUNTING FRAMES ==="
+FPS=$(fps)
+echo "FPS is $FPS"
+
+mkdir -p $FRAMES
+mkdir -p $DITHER
+
+echo "=== EXTRACTING FRAMES ==="
+ffmpeg -v info -i "$IN" -vf scale=-2:$HEIGHT "$FRAMES"'/%06d.png'
+
+echo "=== DITHERING (might take a while) ==="
+for f in "$FRAMES"/*; do 2ff <"$f" | jd | ff2png >"$DITHER/$(basename $f)"; done
+
+echo "=== ENCODING ==="
+ffmpeg -v info -r 29.96 -i "$PROJ"'-dither/%06d.png' -i "$IN" -c:v libx264 -preset veryslow -c:a copy -pix_fmt yuv420p -map 0:v:0 -map 1:a:0 $OUT
