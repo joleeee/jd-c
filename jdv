@@ -50,4 +50,4 @@ echo "=== DITHERING (might take a while) ==="
 for f in "$FRAMES"/*; do 2ff <"$f" | jd | ff2png >"$DITHER/$(basename $f)"; done
 
 echo "=== ENCODING ==="
-ffmpeg -v info -r 29.96 -i "$PROJ"'-dither/%06d.png' -i "$IN" -c:v libx264 -preset veryslow -c:a copy -pix_fmt yuv420p -map 0:v:0 -map 1:a:0 $OUT
+ffmpeg -v info -r $FPS -i "$PROJ"'-dither/%06d.png' -i "$IN" -c:v libx264 -preset veryslow -c:a copy -pix_fmt yuv420p -map 0:v:0 -map 1:a:0 $OUT
