@@ -9,3 +9,9 @@ I originally started writing this with png support but it quickly grew big, ugly
 ```
 2ff <cute.png | jd | ff2png >cuter.png
 ```
+You can also override the palette:
+```
+echo -e cdbca8\n7b3f21\n441511\nccd3c9\n2e4b91\n700c08\nee4218\ne8c689\n040104\nb08464\na66b3e\n63321b\nc6b69d > pal
+2ff <asuka.png | ./jd | ff2png >aska.png
+```
+

@@ -23,7 +23,7 @@ struct pixel {
 	int32_t r, g, b;
 };
 
-struct pixel pal[] = {
+struct pixel pal[128] = {
 	{0, 0, 0},
 	{UINT16_MAX, UINT16_MAX, UINT16_MAX},
 	{UINT16_MAX, 0, 0},
@@ -56,14 +56,46 @@ closest_color(struct pixel in, struct pixel *out){
 	memcpy(out, &pal[bi], sizeof(*out));
 }
 
+void
+set_pal() {
+	FILE *fp = fopen("pal", "r");
+	if (fp != NULL) {
+		size_t i = 0;
+		int32_t R, G, B;
+		while(fscanf(fp, "%2x%2x%2x", &R, &G, &B) == 3) {
+			pal[i].r = R * 256;
+			pal[i].g = G * 256;
+			pal[i].b = B * 256;
+			++i;
+			fprintf(stderr, "%d %d %d\n", R, G, B);
+		}
+		pal_len = i;
+		return;
+	}
+
+	// get length
+	size_t i = 0;
+	struct pixel now, next;
+	while(1){
+		now = pal[i];
+		next = pal[i+1];
+		if(now.r + now.g + now.b == 0 && next.r + next.g + next.b == 0) {
+			pal_len = i;
+			return;
+		}
+		++i;
+	}
+}
+
 int
 main(int argc, char* argv[]){
 	if(argc != 1){
 		fputs("usage: jd <in.ff >out.ff\n", stderr);
 		return 1;
 	}
+
 	// set to 2 for B/W
-	pal_len = sizeof(pal)/sizeof(*pal);
+	set_pal();
 
 	uint8_t header[8];
 	fread(header, sizeof(*header), sizeof(header)/sizeof(*header), stdin);
