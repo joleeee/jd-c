@@ -25,9 +25,13 @@ red_mean(pixel a, pixel b) {
 		 d_g = abs(a[1] - b[1]),
 		 d_b = abs(a[2] - b[2]);
 
-	float c_1 = (d_r*d_r) * (512 + mean_r/(float)UINT16_MAX);
-	float c_2 = (d_g*d_g) * 1024;
-	float c_3 = (d_b*d_b) * (512 + (UINT16_MAX - 1 - mean_r)/(float)UINT16_MAX);
+	// 256 is to 16bit what 1 is to 8bit
+	uint32_t iota =  UINT8_MAX+1; // 256
+	uint32_t max  = UINT16_MAX+1;
+
+	float c_1 = (d_r*d_r) * (2*iota + mean_r/(float)(max-1));
+	float c_2 = (d_g*d_g) * (4*iota);
+	float c_3 = (d_b*d_b) * (2*iota + (max - 2 - mean_r)/(float)(max-1));
 
 	float c = sqrt(c_1 + c_2 + c_3);
 	return c;
@@ -56,7 +60,7 @@ set_pal() {
 		int32_t input[3];
 		while(fscanf(fp, "%2x%2x%2x", &input[0], &input[1], &input[2]) == 3) {
 			for(size_t i = 0; i < 3; ++i)
-				pal[color_i][i] = input[i] * 256;
+				pal[color_i][i] = input[i] * (UINT8_MAX+1);
 			++color_i;
 		}
 		pal_len = color_i;
