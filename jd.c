@@ -20,14 +20,14 @@ size_t pal_len;
 
 float
 red_mean(pixel a, pixel b) {
-	float mean_r =    (a[0] + b[0])/2,
+	float mean_r =    (a[0] + b[0])/2.0,
 		 d_r = abs(a[0] - b[0]),
 		 d_g = abs(a[1] - b[1]),
 		 d_b = abs(a[2] - b[2]);
 
-	float c_1 = (512+mean_r/(float)UINT16_MAX)*d_r*d_r;
-	float c_2 = 1024*d_g*d_g;
-	float c_3 = (512+ (UINT16_MAX-1-mean_r)/(float)UINT16_MAX)*d_b*d_b;
+	float c_1 = (d_r*d_r) * (512 + mean_r/(float)UINT16_MAX);
+	float c_2 = (d_g*d_g) * 1024;
+	float c_3 = (d_b*d_b) * (512 + (UINT16_MAX - 1 - mean_r)/(float)UINT16_MAX);
 
 	float c = sqrt(c_1 + c_2 + c_3);
 	return c;
