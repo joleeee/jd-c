@@ -1,2 +1,2 @@
 jd: jd.c
-	musl-gcc -static jd.c -o jd
+	musl-gcc -O2 -static jd.c -o jd
