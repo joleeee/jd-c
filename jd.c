@@ -29,9 +29,9 @@ red_mean(pixel a, pixel b) {
 	uint32_t iota =  UINT8_MAX+1; // 256
 	uint32_t max  = UINT16_MAX+1;
 
-	float c_1 = (d_r*d_r) * (2*iota + mean_r/(float)(max-1));
+	float c_1 = (d_r*d_r) * (2*iota + mean_r/(float)max);
 	float c_2 = (d_g*d_g) * (4*iota);
-	float c_3 = (d_b*d_b) * (2*iota + (max - 2 - mean_r)/(float)(max-1));
+	float c_3 = (d_b*d_b) * (2*iota + (max - 1 - mean_r)/(float)max);
 
 	float c = sqrt(c_1 + c_2 + c_3);
 	return c;
